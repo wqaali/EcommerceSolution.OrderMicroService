@@ -2,6 +2,7 @@ using OrdersMicroservice.API.Middleware;
 using OrderMicroService.BLL;
 using OrderMicroService.DAL;
 using FluentValidation.AspNetCore;
+using OrderMicroService.BLL.HttpClients;
 
 namespace OrderMicroService.API
 {
@@ -32,6 +33,9 @@ namespace OrderMicroService.API
                     .AllowAnyMethod()
                     .AllowAnyHeader();
                 });
+            });
+            builder.Services.AddHttpClient<UsersMicroserviceClient>(client => {
+                client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
             });
             var app = builder.Build();
             app.UseExceptionHandlingMiddleware();
