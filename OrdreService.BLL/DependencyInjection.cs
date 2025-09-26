@@ -17,6 +17,11 @@ namespace OrderMicroService.BLL
             services.AddAutoMapper(typeof(OrderAddRequestToOrderMappingProfile).Assembly);
             services.AddValidatorsFromAssemblyContaining<OrderAddRequestValidator>();
             services.AddScoped<IOrdersService, OrdersService>();
+            services.AddStackExchangeRedisCache(options =>
+            {
+                options.Configuration = $"{configuration["Redis_HOST"]}" +
+                $":{configuration["Redis_PORT"]}";
+            });
             return services;
     }
 }

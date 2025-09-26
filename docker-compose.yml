@@ -1,0 +1,115 @@
+version: '3.4'
+
+services:
+  ordermicroservice.api:
+    image: wqaa/order-microservice
+    build:
+      context: .
+      dockerfile: OrderMicroService.API/Dockerfile
+    environment:
+      - MONGODB_HOST=mongodb-container
+      - MONGODB_PORT=27017
+      - MONGODB_DATABASE=OrdersDatabase
+      - UsersMicroserviceName=users-microservice # Name of the service
+      - UsersMicroservicePort=9090
+      - ProductsMicroserviceName=products-microservice #Name of the service
+      - ProductsMicroservicePort=8080
+      - Redis_HOST=redis
+      - Redis_PORT=6379 
+    ports:
+      - "7001:8080"
+    networks:
+      - ecommerce-network
+      - orders-mongodb-network 
+
+  mongodb-container:
+    image: mongo:latest
+    container_name: mongodb-container
+    ports:
+      - "27017:27017"
+    volumes:
+      # Adjust the path depending on where your init scripts are
+      - ../mongo-init:/docker-entrypoint-initdb.d
+    networks:
+      - orders-mongodb-network
+      
+  users-microservice:
+   image: users-microservice:latest
+   environment:
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_HTTP_ENVIRONMENT=Development
+    - HOST_NAME=sqlserver-container
+    - DB_NAME=eCommerceUserDB
+    - DB_USER=sa
+    - DB_PASSWORD=Sa@12345
+   ports:
+    - "5000:9090"
+   networks:
+    - users-sqlserver-network
+    - ecommerce-network
+   depends_on:
+    - sqlserver-container
+
+
+  products-microservice:
+   image: product-microservice:latest
+   environment:
+    - ASPNETCORE_HTTP_PORTS=8080
+    - HOST_NAME=sqlserver-container
+    - DB_NAME=ecommerceproductsdatabase
+    - DB_USER=sa
+    - DB_PASSWORD=Sa@12345
+   ports:
+    - "6001:8080"
+   networks:
+    - products-sqlserver-network
+    - ecommerce-network
+   depends_on:
+    - sqlserver-container
+
+  sqlserver-container:
+   image: mcr.microsoft.com/mssql/server:2022-latest
+   environment:
+    - ACCEPT_EULA=Y
+    - MSSQL_SA_PASSWORD=Sa@12345
+   ports:
+    - "1433:1433"
+   hostname: sqlexp
+   volumes:
+    - sqlserver-data:/var/opt/mssql
+   networks:
+    - products-sqlserver-network
+    - users-sqlserver-network
+    - ecommerce-network
+
+  redis: 
+   image: redis:latest
+   ports:
+    - "6379:6379"
+   volumes:
+    - D:\Learning\DotNetCoreMicroservices\RedisDir:/data
+   networks:
+    - ecommerce-network
+
+  apigateway:
+   image: apigateway
+   build:
+    context: .
+    dockerfile: APIGateway/Dockerfile
+   networks:
+    - ecommerce-network
+   ports:
+    - "4000:8080"
+
+networks:
+ orders-mongodb-network:
+  driver: bridge
+ products-sqlserver-network:
+  driver: bridge
+ users-sqlserver-network:
+  driver: bridge
+ ecommerce-network:
+  driver: bridge
+
+volumes:
+  sqlserver-data:

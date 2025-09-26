@@ -10,14 +10,16 @@ namespace OrderMicroService.DAL;
     {
         public static IServiceCollection AddDataAccessLayer(this IServiceCollection services, IConfiguration configuration)
         {
-        var connectionTemplate = configuration.GetConnectionString("mongodb");
-        var connectionStringValues = connectionTemplate.Replace("$MONGODB_HOST", Environment.GetEnvironmentVariable("MONGODB_HOST")).
-            Replace("$MONGODB_PORT", Environment.GetEnvironmentVariable("MONGODB_PORT"));
-        services.AddSingleton<IMongoClient>(new MongoClient(connectionStringValues));
+        string connectionStringTemplate = configuration.GetConnectionString("MongoDB")!;
+        string connectionString = connectionStringTemplate
+          .Replace("$MONGODB_HOST", Environment.GetEnvironmentVariable("MONGODB_HOST"))
+          .Replace("$MONGODB_PORT", Environment.GetEnvironmentVariable("MONGODB_PORT"));
+
+        services.AddSingleton<IMongoClient>(new MongoClient(connectionString));
         services.AddScoped<IMongoDatabase>(provider=>
         {
             IMongoClient client=provider.GetRequiredService<IMongoClient>();
-            return client.GetDatabase("OrdersDatabase");
+            return client.GetDatabase(Environment.GetEnvironmentVariable("MONGODB_DATABASE"));
         });
 
         services.AddScoped<IOrdersRepository, OrdersRepository>();

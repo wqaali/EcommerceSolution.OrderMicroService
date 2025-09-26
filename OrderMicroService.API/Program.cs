@@ -3,6 +3,8 @@ using OrderMicroService.BLL;
 using OrderMicroService.DAL;
 using FluentValidation.AspNetCore;
 using OrderMicroService.BLL.HttpClients;
+using Polly;
+using OrderMicroService.BLL.Policies;
 
 namespace OrderMicroService.API
 {
@@ -34,9 +36,26 @@ namespace OrderMicroService.API
                     .AllowAnyHeader();
                 });
             });
-            builder.Services.AddHttpClient<UsersMicroserviceClient>(client => {
+            builder.Services.AddTransient<IUserServicePolicies, UserServicePolicies>();
+            builder.Services.AddTransient<IProductsMicroservicePolicies, ProductsMicroservicePolicies>();
+            builder.Services.AddTransient<IPollyPolicies, PollyPolicies>();
+
+            builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
+            {
                 client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
-            });
+            })
+              .AddPolicyHandler(
+              builder.Services.BuildServiceProvider().GetRequiredService<IUserServicePolicies>().GetCombinedPolicy()
+              );
+
+            builder.Services.AddHttpClient<ProductsMicroserviceClient>(client =>
+            {
+                client.BaseAddress = new Uri($"http://{builder.Configuration["ProductsMicroserviceName"]}:{builder.Configuration["ProductsMicroservicePort"]}");
+            }).AddPolicyHandler(
+               builder.Services.BuildServiceProvider().GetRequiredService<IProductsMicroservicePolicies>().GetFallbackPolicy()).AddPolicyHandler(
+               builder.Services.BuildServiceProvider().GetRequiredService<IProductsMicroservicePolicies>().GetBulkheadIsolationPolicy())
+
+  ; ;
             var app = builder.Build();
             app.UseExceptionHandlingMiddleware();
             app.UseRouting();
@@ -49,7 +68,7 @@ namespace OrderMicroService.API
             app.UseSwaggerUI();
 
             //Auth
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseAuthentication();
             app.UseAuthorization();
 
