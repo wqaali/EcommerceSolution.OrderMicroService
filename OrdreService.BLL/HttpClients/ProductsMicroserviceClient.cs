@@ -38,7 +38,7 @@ public class ProductsMicroserviceClient
                 ProductDTO? productFromCache = JsonSerializer.Deserialize<ProductDTO>(cacheProduct);
                 return productFromCache;
             }
-            HttpResponseMessage response = await _httpClient.GetAsync($"/api/products/search/product-id/{productID}");
+            HttpResponseMessage response = await _httpClient.GetAsync($"/ecommerce/products/search/product-id/{productID}");
             //We have implemented the policies if anything goes wrong then polly fllback policy will run but after implementing 
             //Cache it is conflicting because error was also being saved in cache below will not let it save to cache
             if (response.StatusCode == HttpStatusCode.ServiceUnavailable)

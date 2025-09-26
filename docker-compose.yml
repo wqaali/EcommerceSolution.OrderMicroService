@@ -10,9 +10,9 @@ services:
       - MONGODB_HOST=mongodb-container
       - MONGODB_PORT=27017
       - MONGODB_DATABASE=OrdersDatabase
-      - UsersMicroserviceName=users-microservice # Name of the service
-      - UsersMicroservicePort=9090
-      - ProductsMicroserviceName=products-microservice #Name of the service
+      - UsersMicroserviceName=apigateway # Name of the service
+      - UsersMicroservicePort=8080
+      - ProductsMicroserviceName=apigateway #Name of the service
       - ProductsMicroservicePort=8080
       - Redis_HOST=redis
       - Redis_PORT=6379 
@@ -43,7 +43,7 @@ services:
     - DB_USER=sa
     - DB_PASSWORD=Sa@12345
    ports:
-    - "5000:9090"
+    - "5002:9090"
    networks:
     - users-sqlserver-network
     - ecommerce-network
