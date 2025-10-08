@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using OrderMicroService.BLL.Mappers;
+using OrderMicroService.BLL.RabbitMQ;
 using OrderMicroService.BLL.ServiceContract;
 using OrderMicroService.BLL.Services;
 using OrderMicroService.BLL.Validator;
@@ -22,6 +23,10 @@ namespace OrderMicroService.BLL
                 options.Configuration = $"{configuration["Redis_HOST"]}" +
                 $":{configuration["Redis_PORT"]}";
             });
+            services.AddTransient<IRabbitMQProductNameUpdateConsumer, RabbitMQProductNameUpdateConsumer>();
+            services.AddTransient<IRabbitMQProductDeleteConsumer, RabbitMQProductNameDeleteConsumer>();
+            services.AddHostedService<RabbitMQProductNameUpdateHostedService>();
+            services.AddHostedService<RabbitMQProductDeletionHostedService>();
             return services;
     }
 }

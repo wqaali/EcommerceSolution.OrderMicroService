@@ -2,7 +2,7 @@ version: '3.4'
 
 services:
   ordermicroservice.api:
-    image: wqaa/order-microservice
+    image: orders-microservice:latest
     build:
       context: .
       dockerfile: OrderMicroService.API/Dockerfile
@@ -15,7 +15,12 @@ services:
       - ProductsMicroserviceName=apigateway #Name of the service
       - ProductsMicroservicePort=8080
       - Redis_HOST=redis
-      - Redis_PORT=6379 
+      - Redis_PORT=6379
+      - RabbitMQ_HostName=rabbitmq
+      - RabbitMQ_UserName=user
+      - RabbitMQ_Password=password
+      - RabbitMQ_Port=5672
+      - RabbitMQ_Products_Exchange=product.exchange
     ports:
       - "7001:8080"
     networks:
@@ -35,55 +40,63 @@ services:
       
   users-microservice:
    image: users-microservice:latest
+   container_name: users-microservice
    environment:
     - ASPNETCORE_HTTP_PORTS=8080
     - ASPNETCORE_HTTP_ENVIRONMENT=Development
-    - HOST_NAME=sqlserver-container
-    - DB_NAME=eCommerceUserDB
-    - DB_USER=sa
-    - DB_PASSWORD=Sa@12345
+    - MYSQL_HOST=mysql-container
+    - MYSQL_PORT=3306
+    - MYSQL_DATABASE=eCommerceUserDB
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=admin
    ports:
     - "5002:9090"
    networks:
-    - users-sqlserver-network
+    - users-mysql-network
     - ecommerce-network
    depends_on:
-    - sqlserver-container
+    - mysql-container
 
 
   products-microservice:
-   image: product-microservice:latest
+   image: products-microservice:latest
+   container_name: products-microservice
    environment:
     - ASPNETCORE_HTTP_PORTS=8080
-    - HOST_NAME=sqlserver-container
-    - DB_NAME=ecommerceproductsdatabase
-    - DB_USER=sa
-    - DB_PASSWORD=Sa@12345
+    - MYSQL_HOST=mysql-container
+    - MYSQL_PORT=3306
+    - MYSQL_DATABASE=ecommerceproductsdatabase
+    - MYSQL_USER=root
+    - MYSQL_PASSWORD=admin
+    - RabbitMQ_HostName=rabbitmq
+    - RabbitMQ_UserName=user
+    - RabbitMQ_Password=password
+    - RabbitMQ_Port=5672
+    - RabbitMQ_Products_Exchange=product.exchange
    ports:
     - "6001:8080"
    networks:
-    - products-sqlserver-network
+    - products-mysql-network
     - ecommerce-network
    depends_on:
-    - sqlserver-container
+    - mysql-container
 
-  sqlserver-container:
-   image: mcr.microsoft.com/mssql/server:2022-latest
+  mysql-container:
+   image: mysql:8.0
    environment:
-    - ACCEPT_EULA=Y
-    - MSSQL_SA_PASSWORD=Sa@12345
+    - MYSQL_ROOT_PASSWORD=admin
    ports:
-    - "1433:1433"
-   hostname: sqlexp
+    - "3307:3306"
    volumes:
-    - sqlserver-data:/var/opt/mssql
+    - ../mysql/mysql-init:/docker-entrypoint-initdb.d
    networks:
-    - products-sqlserver-network
-    - users-sqlserver-network
+    - products-mysql-network
+    - users-mysql-network
     - ecommerce-network
 
   redis: 
    image: redis:latest
+   container_name: redis
    ports:
     - "6379:6379"
    volumes:
@@ -100,16 +113,24 @@ services:
     - ecommerce-network
    ports:
     - "4000:8080"
-
+  rabbitmq:
+   image: rabbitmq:3.13-management
+   container_name: rabbitmq
+   ports:
+    - "5672:5672"
+    - "15672:15672"
+   environment:
+    - RABBITMQ_DEFAULT_USER=user
+    - RABBITMQ_DEFAULT_PASS=password
+   networks:
+    - ecommerce-network
+    
 networks:
  orders-mongodb-network:
   driver: bridge
- products-sqlserver-network:
+ products-mysql-network:
   driver: bridge
- users-sqlserver-network:
+ users-mysql-network:
   driver: bridge
  ecommerce-network:
   driver: bridge
-
-volumes:
-  sqlserver-data:
