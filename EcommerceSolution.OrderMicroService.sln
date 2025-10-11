@@ -11,7 +11,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OrderMicroService.DAL", "Or
 EndProject
 Project("{E53339B2-1760-4266-BCC7-CA923CBCF16C}") = "docker-compose", "docker-compose.dcproj", "{6B3A8974-F227-4B42-B8D3-01CA21018010}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "APIGateway", "APIGateway\APIGateway.csproj", "{3BDA7F8B-DF67-4E4F-91B1-7AE97EC66F45}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "APIGateway", "APIGateway\APIGateway.csproj", "{3BDA7F8B-DF67-4E4F-91B1-7AE97EC66F45}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OrdersUnitTests", "..\OrdersUnitTests\OrdersUnitTests.csproj", "{CF811FB9-2957-4E24-BD23-41C5D86179F0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{3BDA7F8B-DF67-4E4F-91B1-7AE97EC66F45}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BDA7F8B-DF67-4E4F-91B1-7AE97EC66F45}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BDA7F8B-DF67-4E4F-91B1-7AE97EC66F45}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CF811FB9-2957-4E24-BD23-41C5D86179F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CF811FB9-2957-4E24-BD23-41C5D86179F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CF811FB9-2957-4E24-BD23-41C5D86179F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CF811FB9-2957-4E24-BD23-41C5D86179F0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
